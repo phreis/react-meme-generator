@@ -34,7 +34,6 @@ function ControlPanel(props) {
             props.setTopText(event.target.value);
           }}
           value={props.topText}
-          type="text"
           id="topText"
         />
         <br />
