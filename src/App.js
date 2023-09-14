@@ -3,6 +3,31 @@
 import { saveAs } from 'file-saver';
 import { useState } from 'react';
 
+const _historyEntries = [
+  {
+    id: 1,
+    memeTopText: 'memes',
+    memeBottomText: 'memes_everywhere',
+    memeTemplate: 'buzz',
+    memeURL: 'https://api.memegen.link/images/buzz/memes/memes_everywhere.gif',
+  },
+  {
+    id: 2,
+    memeTopText: '_',
+    memeBottomText: "it's_a_trap!",
+    memeTemplate: 'ackbar',
+    memeURL: "https://api.memegen.link/images/ackbar/_/it's_a_trap!.png",
+  },
+  {
+    id: 3,
+    memeTopText: "i_don't_know_what_this_meme_is_for",
+    memeBottomText: "and_at_this_point_i'm_too_afraid_to_ask",
+    memeTemplate: 'afraid',
+    memeURL:
+      "https://api.memegen.link/images/afraid/i_don't_know_what_this_meme_is_for/and_at_this_point_i'm_too_afraid_to_ask.png",
+  },
+];
+
 function getMemeURL(meme) {
   let memeURL;
   let memeTemplate = meme.template;
@@ -12,10 +37,13 @@ function getMemeURL(meme) {
   }
   memeURL = `https://api.memegen.link/images/${memeTemplate}`;
   if (meme.topText) {
-    memeURL += `/${meme.topText}`;
-    if (meme.bottomText) {
-      memeURL += `/${meme.bottomText}`;
-    }
+    memeURL += `/${encodeURIComponent(encodeURIComponent(meme.topText))}`;
+  } else {
+    memeURL += `/_`;
+  }
+
+  if (meme.bottomText) {
+    memeURL += `/${encodeURIComponent(encodeURIComponent(meme.bottomText))}`;
   }
 
   return `${memeURL}.png`;
@@ -79,6 +107,23 @@ function Meme(props) {
   return <img data-test-id="meme-image" src={props.memeURL} alt="Meme" />;
 }
 
+function History(props) {
+  return (
+    <section>
+      {props.historyEntries.map((entry) => {
+        return (
+          <div key={`history-id-${entry.id}`}>
+            <div>
+              {`id: ${entry.id} topText: ${entry.memeTopText} bottomText: ${entry.memeBottomText}
+              memeTemplate: ${entry.memeTemplate}`}
+            </div>
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
 export default function App() {
   const [topText, setTopText] = useState('');
   const [bottomText, setBottomText] = useState('');
@@ -87,8 +132,11 @@ export default function App() {
     'https://api.memegen.link/images/buzz.png',
   );
 
+  let historyEntries = [];
+  const historyEntriesTmp = JSON.parse(localStorage.getItem('memeHistory'));
+  if (historyEntriesTmp) historyEntries = historyEntriesTmp;
+
   function generateMeme() {
-    console.log('generateMeme');
     setMemeURL(
       getMemeURL({
         template: template,
@@ -96,6 +144,13 @@ export default function App() {
         bottomText: bottomText,
       }),
     );
+    historyEntries.push({
+      id: historyEntries.length + 1,
+      memeTopText: topText,
+      memeBottomText: bottomText,
+      memeTemplate: template,
+    });
+    localStorage.setItem('memeHistory', JSON.stringify(historyEntries));
   }
 
   function downloadMeme() {
@@ -115,6 +170,7 @@ export default function App() {
         downloadMeme={downloadMeme}
       />
       <Meme memeURL={memeURL} />
+      <History historyEntries={historyEntries} />
     </>
   );
 }
