@@ -47,7 +47,7 @@ function ControlPanel(props) {
           id="bottomText"
         />
         <br />
-        <label htmlFor="template">Meme Template</label>
+        <label htmlFor="template">Meme template</label>
         <input
           onInput={(event) => {
             props.setTemplate(event.target.value);
