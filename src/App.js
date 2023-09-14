@@ -5,16 +5,17 @@ import { useState } from 'react';
 
 function getMemeURL(meme) {
   let memeURL;
-  if (meme.template) {
-    memeURL = `https://api.memegen.link/images/${meme.template}`;
-    if (meme.topText) {
-      memeURL += `/${meme.topText}`;
-      if (meme.bottomText) {
-        memeURL += `/${meme.bottomText}`;
-      }
+  let memeTemplate = meme.template;
+
+  if (!meme.template) {
+    memeTemplate = 'buzz';
+  }
+  memeURL = `https://api.memegen.link/images/${memeTemplate}`;
+  if (meme.topText) {
+    memeURL += `/${meme.topText}`;
+    if (meme.bottomText) {
+      memeURL += `/${meme.bottomText}`;
     }
-  } else {
-    throw new Error('Template missing!');
   }
 
   return `${memeURL}.png`;
