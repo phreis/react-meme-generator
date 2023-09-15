@@ -1,7 +1,89 @@
-// /** @jsxImportSource @emotion/react */
-// import { css } from '@emotion/react';
+import './bodyStyles.css';
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react';
 import { saveAs } from 'file-saver';
 import { useState } from 'react';
+
+const color = '#204E4A';
+
+const sectionStyles = css`
+  background-color: #2e933c;
+  border-radius: 32px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+`;
+
+const formStyles = css`
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+    'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+`;
+
+const controlPanelStyles = css`
+  border: solid;
+  border-radius: 16px;
+  background-color: #ecba82;
+  color: ${color};
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding-bottom: 16px;
+`;
+
+const memeStyles = css`
+  border-radius: 16px;
+  background-color: green;
+  color: ${color};
+`;
+
+const historyStyles = css`
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  justify-content: top;
+  gap: 12px;
+  color: ${color};
+`;
+
+const leftColumn = css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: top;
+  gap: 12px;
+  color: ${color};
+`;
+
+const rightColumn = css``;
+
+const columnStyle = css`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 12px;
+`;
+
+const historyElementStyles = css`
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  grid-gap: 12px;
+  align-items: left;
+  border-radius: 16px;
+  border-color: black;
+  background-color: #81c14b;
+  padding: 10px;
+`;
 
 const _historyEntries = [
   {
@@ -46,13 +128,19 @@ function getMemeURL(meme) {
     memeURL += `/${encodeURIComponent(encodeURIComponent(meme.bottomText))}`;
   }
 
-  return `${memeURL}.png`;
+  memeURL += `.png`;
+
+  if (meme.thumbnail) {
+    memeURL += `?height=100&width=100`;
+  }
+  return memeURL;
 }
 
 function ControlPanel(props) {
   return (
-    <div>
+    <div css={controlPanelStyles}>
       <form
+        css={formStyles}
         onSubmit={(event) => {
           event.preventDefault();
         }}
@@ -65,7 +153,7 @@ function ControlPanel(props) {
           value={props.topText}
           id="topText"
         />
-        <br />
+
         <label htmlFor="bottomText">Bottom text</label>
         <input
           onInput={(event) => {
@@ -74,7 +162,7 @@ function ControlPanel(props) {
           value={props.bottomText}
           id="bottomText"
         />
-        <br />
+
         <label htmlFor="template">Meme template</label>
         <input
           onInput={(event) => {
@@ -83,11 +171,6 @@ function ControlPanel(props) {
           value={props.template}
           id="template"
         />
-
-        <br />
-        <br />
-        <br />
-        <br />
         <button
           data-test-id="generate-meme"
           onClick={() => props.generateMeme()}
@@ -95,27 +178,39 @@ function ControlPanel(props) {
           Generate
         </button>
       </form>
-      <br />
-      <br />
-      <br />
       <button onClick={() => props.downloadMeme()}>Download</button>
     </div>
   );
 }
 
 function Meme(props) {
-  return <img data-test-id="meme-image" src={props.memeURL} alt="Meme" />;
+  return (
+    <img
+      css={memeStyles}
+      data-test-id="meme-image"
+      src={props.memeURL}
+      alt="Meme"
+    />
+  );
 }
 
 function History(props) {
   return (
-    <section>
+    <section css={historyStyles}>
       {props.historyEntries.map((entry) => {
         return (
-          <div key={`history-id-${entry.id}`}>
-            <div>
-              {`id: ${entry.id} topText: ${entry.memeTopText} bottomText: ${entry.memeBottomText}
-              memeTemplate: ${entry.memeTemplate}`}
+          <div css={historyElementStyles} key={`history-id-${entry.id}`}>
+            <img
+              src={entry.memeThumbnailURL}
+              alt="Thumbnail"
+              width="100"
+              height="100"
+            />
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span>ID: {entry.id}</span>
+              <span>Top Text: {entry.memeTopText}</span>
+              <span>Bottom Text: {entry.memeBottomText}</span>
+              <span>Template: {entry.memeTemplate}</span>
             </div>
           </div>
         );
@@ -149,28 +244,52 @@ export default function App() {
       memeTopText: topText,
       memeBottomText: bottomText,
       memeTemplate: template,
+      memeThumbnailURL: getMemeURL({
+        template: template,
+        topText: topText,
+        bottomText: bottomText,
+        thumbnail: true,
+      }),
     });
     localStorage.setItem('memeHistory', JSON.stringify(historyEntries));
   }
 
+  function showMeme(props) {
+    setMemeURL(
+      getMemeURL({
+        template: props.template,
+        topText: props.topText,
+        bottomText: props.bottomText,
+      }),
+    );
+  }
+
   function downloadMeme() {
-    saveAs(memeURL, `meme-${template}-${topText}-${bottomText}`);
+    saveAs(memeURL, `meme-${template}`);
   }
 
   return (
-    <>
-      <ControlPanel
-        topText={topText}
-        setTopText={setTopText}
-        bottomText={bottomText}
-        setBottomText={setBottomText}
-        template={template}
-        setTemplate={setTemplate}
-        generateMeme={generateMeme}
-        downloadMeme={downloadMeme}
-      />
-      <Meme memeURL={memeURL} />
-      <History historyEntries={historyEntries} />
-    </>
+    <main>
+      <section css={sectionStyles}>
+        <div css={columnStyle}>
+          <div css={leftColumn}>
+            <Meme memeURL={memeURL} />
+            <ControlPanel
+              topText={topText}
+              setTopText={setTopText}
+              bottomText={bottomText}
+              setBottomText={setBottomText}
+              template={template}
+              setTemplate={setTemplate}
+              generateMeme={generateMeme}
+              downloadMeme={downloadMeme}
+            />
+          </div>
+          <div css={rightColumn}>
+            <History historyEntries={historyEntries} showMeme={showMeme} />
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
