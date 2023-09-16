@@ -3,6 +3,9 @@ import './bodyStyles.css';
 import { css } from '@emotion/react';
 import { saveAs } from 'file-saver';
 import { useState } from 'react';
+import ControlPanel from './ControlPanel';
+import History from './History';
+import Meme from './Meme';
 
 const color = '#204E4A';
 
@@ -15,46 +18,6 @@ const sectionStyles = css`
   align-items: center;
   justify-content: center;
   gap: 16px;
-`;
-
-const formStyles = css`
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
-    'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-  padding-top: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-`;
-
-const controlPanelStyles = css`
-  border: solid;
-  border-radius: 16px;
-  background-color: #ecba82;
-  color: ${color};
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding-bottom: 16px;
-`;
-
-const memeStyles = css`
-  border-radius: 16px;
-  background-color: green;
-  color: ${color};
-`;
-
-const historyStyles = css`
-  display: flex;
-  flex-direction: column;
-  align-items: left;
-  justify-content: top;
-  gap: 12px;
-  color: ${color};
 `;
 
 const leftColumn = css`
@@ -74,18 +37,7 @@ const columnStyle = css`
   grid-gap: 12px;
 `;
 
-const historyElementStyles = css`
-  display: grid;
-  grid-template-columns: 1fr 3fr;
-  grid-gap: 12px;
-  align-items: left;
-  border-radius: 16px;
-  border-color: black;
-  background-color: #81c14b;
-  padding: 10px;
-`;
-
-const _historyEntries = [
+/* const _historyEntries = [
   {
     id: 1,
     memeTopText: 'memes',
@@ -108,7 +60,7 @@ const _historyEntries = [
     memeURL:
       "https://api.memegen.link/images/afraid/i_don't_know_what_this_meme_is_for/and_at_this_point_i'm_too_afraid_to_ask.png",
   },
-];
+]; */
 
 function getMemeURL(meme) {
   let memeURL;
@@ -134,89 +86,6 @@ function getMemeURL(meme) {
     memeURL += `?height=100&width=100`;
   }
   return memeURL;
-}
-
-function ControlPanel(props) {
-  return (
-    <div css={controlPanelStyles}>
-      <form
-        css={formStyles}
-        onSubmit={(event) => {
-          event.preventDefault();
-        }}
-      >
-        <label htmlFor="topText">Top text</label>
-        <input
-          onInput={(event) => {
-            props.setTopText(event.target.value);
-          }}
-          value={props.topText}
-          id="topText"
-        />
-
-        <label htmlFor="bottomText">Bottom text</label>
-        <input
-          onInput={(event) => {
-            props.setBottomText(event.target.value);
-          }}
-          value={props.bottomText}
-          id="bottomText"
-        />
-
-        <label htmlFor="template">Meme template</label>
-        <input
-          onInput={(event) => {
-            props.setTemplate(event.target.value);
-          }}
-          value={props.template}
-          id="template"
-        />
-        <button
-          data-test-id="generate-meme"
-          onClick={() => props.generateMeme()}
-        >
-          Generate
-        </button>
-      </form>
-      <button onClick={() => props.downloadMeme()}>Download</button>
-    </div>
-  );
-}
-
-function Meme(props) {
-  return (
-    <img
-      css={memeStyles}
-      data-test-id="meme-image"
-      src={props.memeURL}
-      alt="Meme"
-    />
-  );
-}
-
-function History(props) {
-  return (
-    <section css={historyStyles}>
-      {props.historyEntries.map((entry) => {
-        return (
-          <div css={historyElementStyles} key={`history-id-${entry.id}`}>
-            <img
-              src={entry.memeThumbnailURL}
-              alt="Thumbnail"
-              width="100"
-              height="100"
-            />
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span>ID: {entry.id}</span>
-              <span>Top Text: {entry.memeTopText}</span>
-              <span>Bottom Text: {entry.memeBottomText}</span>
-              <span>Template: {entry.memeTemplate}</span>
-            </div>
-          </div>
-        );
-      })}
-    </section>
-  );
 }
 
 export default function App() {
@@ -254,14 +123,14 @@ export default function App() {
     localStorage.setItem('memeHistory', JSON.stringify(historyEntries));
   }
 
-  function showMeme(props) {
-    setMemeURL(
-      getMemeURL({
-        template: props.template,
-        topText: props.topText,
-        bottomText: props.bottomText,
-      }),
-    );
+  function showMeme(meme) {
+    const tmpMemeURL = getMemeURL({
+      template: meme.memeTemplate,
+      topText: meme.memeTopText,
+      bottomText: meme.memeBottomText,
+    });
+    console.log(tmpMemeURL);
+    setMemeURL(tmpMemeURL);
   }
 
   function downloadMeme() {
